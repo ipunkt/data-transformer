@@ -29,7 +29,7 @@ class TransformerJsonFile
         $file = $this->jsonFileName();
 
         if (!file_exists($file)) {
-            file_put_contents($file, json_encode($contents));
+            file_put_contents($file, json_encode($contents, JSON_PRETTY_PRINT));
             echo " The (" . basename($this->jsonFileName()) . ") file  created successfully. \n";
         } else {
             throw new Exception(" There's already a file with the same Name (" . basename($this->jsonFileName()) . ")");

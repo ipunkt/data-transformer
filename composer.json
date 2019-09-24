@@ -15,7 +15,8 @@
         "fzaninotto/faker": "^1.8",
         "illuminate/console": "^5.7",
         "illuminate/database": "^5.7",
-        "illuminate/support": "^5.7"
+        "illuminate/support": "^5.7",
+        "ext-json": "*"
     },
     "autoload": {
         "psr-4": {

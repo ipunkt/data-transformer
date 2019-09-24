@@ -48,6 +48,10 @@ class SourceDB
         foreach ($tables as $table) {
             $getAllColumns = $this->firstRowForEachTable($table);
 
+            if ($getAllColumns->isEmpty()){
+                continue;
+            }
+
             $result[$table] = collect($getAllColumns[0])->mapWithKeys(function ($value, $key) {
 
                 $ColumnsToBeFaked = collect($this->getColumnsFile());
