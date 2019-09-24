@@ -3,8 +3,7 @@
 [![Latest Stable Version](https://poser.pugx.org/ipunkt/data-transformer/v/stable.svg)](https://packagist.org/packages/ipunkt/data-transformer) 
 [![Latest Unstable Version](https://poser.pugx.org/ipunkt/data-transformer/v/unstable.svg)](https://packagist.org/packages/ipunkt/data-transformer) 
 [![License](https://poser.pugx.org/ipunkt/data-transformer/license.svg)](https://packagist.org/packages/ipunkt/data-transformer) 
-[![Total Downloads](https://poser.pugx.org/ipunkt/data-transformer/downloads.svg)](https://packagist.org/packages/ipunkt/data-transformer) 
-[![Building](https://api.travis-ci.org/ipunkt/data-transformer.svg?branch=master)](https://travis-ci.org/ipunkt/data-transformer)
+[![Total Downloads](https://poser.pugx.org/ipunkt/data-transformer/downloads.svg)](https://packagist.org/packages/ipunkt/data-transformer)
 
 Data will be manipulated from production (source) to staging (target). This tool will be definitely needed when 
 you dislike to work with real data from your users.

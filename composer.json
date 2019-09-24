@@ -1,6 +1,6 @@
 {
     "name": "ipunkt/data-transformer",
-    "description": "The ability to fake data from source (prod) into target (dev) that will avoid GDPR staffs.",
+    "description": "Filling staging database with fake data filling of GDPR related data.",
     "keywords": ["Data Transformer", "Fake data", "GDPR"],
     "authors": [
         {
@@ -16,7 +16,6 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "app/",
             "Ipunkt\\DataTransformer\\": "src/"
         }
     },
