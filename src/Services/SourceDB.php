@@ -48,25 +48,31 @@ class SourceDB
         foreach ($tables as $table) {
             $getAllColumns = $this->firstRowForEachTable($table);
 
-            if ($getAllColumns->isEmpty()){
-                continue;
-            }
+            if ($getAllColumns->isEmpty()) continue;
 
-            $result[$table] = collect($getAllColumns[0])->mapWithKeys(function ($value, $key) {
+            $result[$table] = collect($getAllColumns[0])->mapWithKeys(function ($value, $columnNameInDB) {
 
                 $ColumnsToBeFaked = collect($this->getColumnsFile());
 
-                $ColumnsToBeFaked->each(function ($fakeVale, $fakeKey) use (&$value, $key) {
+                $transformation = null;
 
-                    $columns[] = $key;
-                    $columnsToFaked = (in_array($fakeKey, $columns) ?? []);
+                $ColumnsToBeFaked->each(function ($transformationValueInConfig, $columnMatchInConfig) use (&$transformation, $columnNameInDB) {
 
-                    if (preg_match("/$key/i", $key, $columnsToFaked)) {
-                        $this->columnsToBeTransformed($key, $value);
+                    $columns[] = $columnNameInDB;
+
+                    $columnsToFaked = [];
+
+                    if (preg_match("/$columnMatchInConfig/i", $columnNameInDB, $columnsToFaked, PREG_OFFSET_CAPTURE)) {
+                        $transformation = $transformationValueInConfig;
+                        return false;
                     }
+
                 });
 
-                return [$key => $value];
+                if ($transformation === null)
+                    $transformation = $this->standardValue;
+
+                return [$columnNameInDB => $transformation];
             });
         }
 
@@ -84,41 +90,6 @@ class SourceDB
     public function storeInTransformerJson()
     {
         return $this->json->createTransformerFile($this->getAllRows());
-    }
-
-    public function columnsToBeTransformed($key, &$value): string
-    {
-        switch ($key) {
-            case 'name':
-                return $value = "fakeName";
-            case 'email':
-                return $value = "fakeEmail";
-            case 'place_of_birth':
-                return $value = "fakePlaceOfBirth";
-            case 'data_health':
-                return $value = "fakeDataHealth";
-            case 'id_number':
-                return $value = "fakeID";
-            case 'phone_number':
-                return $value = "fakePhoneNumber";
-            case 'credit':
-                return $value = "fakeCredit";
-            case 'license_plate':
-                return $value = "fakeLicensePlate";
-            case 'image':
-                return $value = "fakeImage";
-            case 'ip_address':
-                return $value = "fakeIPAddress";
-            case 'data_location':
-                return $value = "fakeDataLocation";
-            case 'address':
-                return $value = "fakeAddress";
-            case 'date_of_birth':
-                return $value = "fakeDateOfBirth";
-
-            default:
-                return $value = $this->standardValue;
-        }
     }
 
     public function setSource($data)

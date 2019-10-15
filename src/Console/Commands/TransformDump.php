@@ -28,7 +28,8 @@ class TransformDump extends Command
         try {
             $jsonFileName = $this->option('config');
             if (empty($jsonFileName)) {
-                throw new Exception("JSON File Name is required.");
+                $this->error("JSON File Name is required.");
+                return;
             }
 
             $this->file = new TransformerJsonFile();
