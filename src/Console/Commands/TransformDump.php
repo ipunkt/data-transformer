@@ -2,30 +2,26 @@
 
 namespace Ipunkt\DataTransformer\Console\Commands;
 
-use Faker\Generator as Faker;
 use Exception;
-use Illuminate\Console\Command;
+use Faker\Generator as Faker;
 use Ipunkt\DataTransformer\Services\GetJsonFile;
 use Ipunkt\DataTransformer\Services\SourceDB;
 use Ipunkt\DataTransformer\Services\TransformerJsonFile;
 
-class TransformDump extends Command
+class TransformDump extends RemoteDBCommand
 {
     protected $sourceDB;
     public $file;
-
-    protected $signature = 'transform:dump {dbSource} {--config=transformer.json}';
+    protected $signature = 'transform:dump {host} {port} {db} {username} {password} {--unix_socket} 
+ 										   {--charset=utf8mb4} {--collation=utf8mb4_unicode_ci}  {--strict=false} 
+ 										   {--engine} {--driver=mysql} {--config=transformer.json}';
 
     protected $description = 'Dump all Tables.';
-
-    public function __construct()
-    {
-        parent::__construct();
-    }
 
     public function handle(): void
     {
         try {
+            $this->connect();
             $jsonFileName = $this->option('config');
             if (empty($jsonFileName)) {
                 $this->error("JSON File Name is required.");
@@ -40,11 +36,12 @@ class TransformDump extends Command
             $this->sourceDB = new SourceDB($this->file, $faker);
 
             $this->sourceDB
-                ->setSource($this->argument('dbSource'))
+                ->setSource('remote')
                 ->storeInTransformerJson();
         } catch (Exception $e) {
             $this->warn($e->getMessage());
             $this->warn($e->getTraceAsString());
         }
     }
+
 }

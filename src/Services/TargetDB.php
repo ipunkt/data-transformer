@@ -66,11 +66,9 @@ class TargetDB
 
     protected function dropTables(string $table): bool
     {
-        print_r("Table $table dropped\n" . PHP_EOL);
         $dbName = $this->getDatabaseName($this->dsnSource);
         $result = DB::connection($this->dsnSource)->select("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME = '{$table}' AND  REFERENCED_TABLE_SCHEMA = '{$dbName}';");
         $dependantTable = collect($result)->pluck("TABLE_NAME")->unique();
-//		echo "$table depends on ".$dependantTable->implode(', ')."\n";
         $dependantTable->each(function ($dependantTableName) {
             $this->dropTables($dependantTableName);
         });
@@ -130,6 +128,7 @@ class TargetDB
 
         foreach ($this->tables() as $table) {
             $this->dropTables($table);
+            print_r("Table $table dropped" . PHP_EOL);
         }
 
         $result = [];
@@ -157,7 +156,7 @@ class TargetDB
         if ($this->alreadyCopied($table))
             return;
 
-        print_r("Transforming table $table .." . PHP_EOL);
+        print_r("Coping table $table .." . PHP_EOL);
 
         $createTableStatement = $this->createTableStatement($table);
         DB::connection($this->getTarget())->statement($createTableStatement);

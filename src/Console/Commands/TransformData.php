@@ -5,26 +5,23 @@ namespace Ipunkt\DataTransformer\Console\Commands;
 
 use Exception;
 use Faker\Generator as Faker;
-use Illuminate\Console\Command;
 use Ipunkt\DataTransformer\Services\GetJsonFile;
 use Ipunkt\DataTransformer\Services\TargetDB;
 use Ipunkt\DataTransformer\Services\TransformerJsonFile;
 
-class TransformData extends Command
+class TransformData extends RemoteDBCommand
 {
     protected $targetDB;
     public $file;
-    protected $signature = 'transform:data {dbSource} {dbTarget} {--config=transformer.json} {--foreign-keys-checks=no}';
+    protected $signature = 'transform:data {host} {port} {db} {username} {password} {--unix_socket} 
+   										   {--charset=utf8mb4} {--collation=utf8mb4_unicode_ci}  {--strict=false} 
+   										   {--engine} {--dbTarget=mysql} {--driver=mysql} {--config=transformer.json} {--foreign-keys-checks=no}';
     protected $description = 'Data will be transformed.';
-
-    public function __construct()
-    {
-        parent::__construct();
-    }
 
     public function handle()
     {
         try {
+            $this->connect();
             $jsonFileName = $this->option('config');
 
             if (empty($jsonFileName)) {
@@ -38,12 +35,9 @@ class TransformData extends Command
             $this->file->setJsonFile($json);
             $this->targetDB = new TargetDB($this->file, $faker);
 
-            $dsnSource = $this->argument('dbSource');
-            $dsnTarget = $this->argument('dbTarget');
+            $dsnSource = 'remote';
+            $dsnTarget = $this->option('dbTarget');
 
-            /**
-             * Disable Foreign Keys
-             */
             $foreignKeysChecks = $this->option('foreign-keys-checks');
             if ($foreignKeysChecks === 'no') {
                 $this->targetDB->disableForeignKeys();
