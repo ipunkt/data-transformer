@@ -8,6 +8,7 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use stdClass;
 
 class TargetDB
 {
@@ -18,6 +19,10 @@ class TargetDB
     protected $dsnSource;
     protected $dsnTarget;
     protected $success = false;
+    /**
+     * @var Collection
+     */
+    protected $copiedTables;
 
     /**
      * TargetDB constructor.
@@ -28,6 +33,7 @@ class TargetDB
     {
         $this->faker = $faker;
         $this->json = $json;
+        $this->copiedTables = collect();
     }
 
     /**
@@ -48,13 +54,26 @@ class TargetDB
         $this->config = collect($transformerDecode);
     }
 
+    public function disableForeignKeys()
+    {
+        DB::connection($this->getTarget())->statement("SET FOREIGN_KEY_CHECKS=0");
+    }
+
     public function tables(): Collection
     {
         return $this->config->keys();
     }
 
-    public function dropTables(string $table): bool
+    protected function dropTables(string $table): bool
     {
+        print_r("Table $table dropped\n" . PHP_EOL);
+        $dbName = $this->getDatabaseName($this->dsnSource);
+        $result = DB::connection($this->dsnSource)->select("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_NAME = '{$table}' AND  REFERENCED_TABLE_SCHEMA = '{$dbName}';");
+        $dependantTable = collect($result)->pluck("TABLE_NAME")->unique();
+//		echo "$table depends on ".$dependantTable->implode(', ')."\n";
+        $dependantTable->each(function ($dependantTableName) {
+            $this->dropTables($dependantTableName);
+        });
         return DB::connection($this->getTarget())->statement("DROP TABLE IF EXISTS `$table`");
     }
 
@@ -109,24 +128,13 @@ class TargetDB
     {
         $this->loadConfiguration();
 
+        foreach ($this->tables() as $table) {
+            $this->dropTables($table);
+        }
+
         $result = [];
         foreach ($this->tables() as $table) {
-
-            $this->dropTables($table);
-            $createTableStatement = $this->createTableStatement($table);
-            DB::connection($this->getTarget())->statement($createTableStatement);
-
-            $this->dsnSource()->table($table)->orderBy('id')->chunk(10, function (Collection $rows) use ($table) {
-                collect($rows)->each(function (\stdClass $row) use ($table) {
-                    $rowValues = collect($row)->mapWithKeys(function ($value, $key) use ($table) {
-                        $value = $this->fakeOrValue($table, $key, $value);
-                        return [$key => $value];
-                    });
-
-                    $this->saveDataInStaging($table, $rowValues);
-                    $this->success = true;
-                });
-            });
+            $this->copyTable($table);
         }
 
         if ($this->success === true) {
@@ -134,6 +142,72 @@ class TargetDB
         }
 
         return $result;
+    }
+
+    protected function copyTable($table)
+    {
+        if ($this->alreadyCopied($table))
+            return;
+
+        $dependencies = $this->readTableDependencies($table);
+        $dependencies->each(function ($table) {
+            $this->copyTable($table);
+        });
+
+        if ($this->alreadyCopied($table))
+            return;
+
+        print_r("Transforming table $table .." . PHP_EOL);
+
+        $createTableStatement = $this->createTableStatement($table);
+        DB::connection($this->getTarget())->statement($createTableStatement);
+
+        $this->dsnSource()->table($table)->orderBy($this->idOrFirstColumn($table))->chunk(1000, function (Collection $rows) use ($table) {
+            collect($rows)->each(function (stdClass $row) use ($table) {
+                $rowValues = collect($row)->mapWithKeys(function ($value, $key) use ($table) {
+                    $value = $this->fakeOrValue($table, $key, $value);
+                    return [$key => $value];
+                });
+
+                $this->saveDataInStaging($table, $rowValues);
+                $this->success = true;
+            });
+        });
+
+        $this->markCopied($table);
+    }
+
+    protected function idOrFirstColumn($table)
+    {
+        $dbName = $this->getDatabaseName($this->dsnSource);
+        $columnNameRows = DB::connection($this->dsnSource)->select("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '{$dbName}' AND TABLE_NAME = '$table';");
+        $columnNames = collect($columnNameRows)->pluck('COLUMN_NAME');
+        if ($columnNames->has('id'))
+            return $columnNames->get('id');
+
+        return $columnNames->first();
+    }
+
+
+    protected function alreadyCopied($tableName)
+    {
+        return $this->copiedTables->has($tableName);
+    }
+
+    protected function markCopied($tableName)
+    {
+        $this->copiedTables->put($tableName, $tableName);
+    }
+
+    protected function readTableDependencies($tableName)
+    {
+        $dbName = $this->getDatabaseName($this->dsnSource);
+        $result = DB::connection($this->dsnSource)->select("SELECT REFERENCED_TABLE_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE REFERENCED_TABLE_SCHEMA = '{$dbName}' AND TABLE_NAME = '{$tableName}';");
+        if (empty($result))
+            return collect();
+
+        $dependantTables = collect($result)->pluck("REFERENCED_TABLE_NAME")->unique();
+        return $dependantTables;
     }
 
     public function setSource(string $data)
@@ -156,5 +230,10 @@ class TargetDB
     public function getTarget()
     {
         return $this->dsnTarget;
+    }
+
+    protected function getDatabaseName($dsn)
+    {
+        return config("database.connections.{$dsn}.database");
     }
 }

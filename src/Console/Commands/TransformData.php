@@ -3,9 +3,9 @@
 namespace Ipunkt\DataTransformer\Console\Commands;
 
 
+use Exception;
 use Faker\Generator as Faker;
 use Illuminate\Console\Command;
-use Exception;
 use Ipunkt\DataTransformer\Services\GetJsonFile;
 use Ipunkt\DataTransformer\Services\TargetDB;
 use Ipunkt\DataTransformer\Services\TransformerJsonFile;
@@ -14,9 +14,7 @@ class TransformData extends Command
 {
     protected $targetDB;
     public $file;
-
-    protected $signature = 'transform:data {dbSource} {dbTarget} {--config=transformer.json}';
-
+    protected $signature = 'transform:data {dbSource} {dbTarget} {--config=transformer.json} {--foreign-keys-checks=no}';
     protected $description = 'Data will be transformed.';
 
     public function __construct()
@@ -42,6 +40,14 @@ class TransformData extends Command
 
             $dsnSource = $this->argument('dbSource');
             $dsnTarget = $this->argument('dbTarget');
+
+            /**
+             * Disable Foreign Keys
+             */
+            $foreignKeysChecks = $this->option('foreign-keys-checks');
+            if ($foreignKeysChecks === 'no') {
+                $this->targetDB->disableForeignKeys();
+            }
 
             $this->targetDB
                 ->setSource($dsnSource)
