@@ -120,9 +120,14 @@ then it will be faked. If you don't want to change Name, then you have to edit t
 
 The second and last Step:
 run the second command `php artisan transform:dump {source} {target}`
+
+If you wanna disable foreign keys that tables has/have, add the following flag `foreign-keys-checks` 
+add the end of the second Command:
+`php artisan transform:dump {source} {target} --foreign-keys-checks=no`
+
 ##### Note: 
-if you changed your config file, then is required otherwise you don't need to anything else.
-`php artisan transform:dump "mysql-production" "mysql-staging""`
+if you changed your config file, then it is required otherwise you don't need to do anything else.
+`php artisan transform:dump "mysql-production" "mysql-staging"`
 
 
 
