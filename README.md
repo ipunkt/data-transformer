@@ -24,14 +24,16 @@ The main job of this package to fake data that GDPR relevant is. Take a look at 
 * License plate
 * Health data
 
-This list must be considered, when you try to work with Data, therefore  GDPR relevant data must be taken 
+This list must be considered, when you try to work with real Data, therefore  GDPR relevant data must be taken 
 into your consideration and must be transformed. The Rest will be then `1:1` taken.
 
 
 ### Installation - Quick-start
  `composer require ipunkt/data-transformer`
  
-Or alternative you can add these lines into your composer file then `composer update` in console command
+__Or__
+
+ Alternative you can add these lines into your composer file then `composer update` in console command
 ```
 "require": {
 	"ipunkt/data-transformer": "^1.0"
@@ -77,10 +79,14 @@ You will need two connection in `config/database.php` source and target
 
 * run this command: `php artisan vendor:publish` then choose `Ipunkt\DataTransformer\DataTransformerServiceProvider`
 * find your Config File in `config/data-transformer.php` 
-* edit your Config for instance: `name` to `username` and/or `fakeName` to `value`
-* run `php artisan transform:dump {source}` your standard config File will be `data-transformer.json` 
+* edit your Config for instance: `name` to `username` and/or `fakeName` to `value` or vice versa
+* run `php artisan transform:dump {host} {db} {username} {password}` your standard config File will be `data-transformer.json` 
 you'll find it in the root of your Application.
-An Example `php artisan transform:dump "mysql-production"`
+An Example `php artisan transform:dump 000.000.0.000 transformer root pw`
+* `000.000.0.000` --> `IP address` as `host`
+* `transformer` --> `DB_NAME`
+* `root` --> `USERNAME`
+*  `pw` --> `PASSWORD`
 in `data-transformer.json` you'll find something like this:
  ```
 {
@@ -115,19 +121,17 @@ Here's the all list with data that could be transformed:
 
 
 
-Here you can decide whether the Name must be transformed or not, for instances. If you let the Name without any change
-then it will be faked. If you don't want to change Name, then you have to edit the Value with `value`. That's it.
+Here you can decide whether the Name must be transformed or not, for instances. If you let the Name without any change then it will be faked. If you don't want to transform Name, then you have to replace the `fakeName` with `value`. That's it.
 
 The second and last Step:
-run the second command `php artisan transform:dump {source} {target}`
+run the second command `php artisan transform: `{host}` `{db}` `{username}` `{password}` (like `transform:dump` command)  `{--target=mysql}` you can change the `mysql` to whtever it is in your `database.php`
 
 If you wanna disable foreign keys that tables has/have, add the following flag `foreign-keys-checks` 
 add the end of the second Command:
 `php artisan transform:dump {source} {target} --foreign-keys-checks=no`
 
-##### Note: 
+__Note:__  
 if you changed your config file, then it is required otherwise you don't need to do anything else.
-`php artisan transform:dump "mysql-production" "mysql-staging"`
 
 
 

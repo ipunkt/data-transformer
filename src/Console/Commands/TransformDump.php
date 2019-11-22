@@ -12,7 +12,7 @@ class TransformDump extends RemoteDBCommand
 {
     protected $sourceDB;
     public $file;
-    protected $signature = 'transform:dump {host} {port} {db} {username} {password} {--unix_socket} 
+    protected $signature = 'transform:dump {host} {--port=3306} {db} {username} {password} {--unix_socket} 
  										   {--charset=utf8mb4} {--collation=utf8mb4_unicode_ci}  {--strict=false} 
  										   {--engine} {--driver=mysql} {--config=transformer.json}';
 

@@ -13,7 +13,7 @@ class TransformData extends RemoteDBCommand
 {
     protected $targetDB;
     public $file;
-    protected $signature = 'transform:data {host} {port} {db} {username} {password} {--unix_socket} 
+    protected $signature = 'transform:data {host} {--port=3306} {db} {username} {password} {--unix_socket} 
    										   {--charset=utf8mb4} {--collation=utf8mb4_unicode_ci}  {--strict=false} 
    										   {--engine} {--dbTarget=mysql} {--driver=mysql} {--config=transformer.json} {--foreign-keys-checks=no}';
     protected $description = 'Data will be transformed.';
