@@ -124,7 +124,10 @@ Here's the all list with data that could be transformed:
 Here you can decide whether the Name must be transformed or not, for instances. If you let the Name without any change then it will be faked. If you don't want to transform Name, then you have to replace the `fakeName` with `value`. That's it.
 
 The second and last Step:
-run the second command `php artisan transform: `{host}` `{db}` `{username}` `{password}` (like `transform:dump` command)  `{--target=mysql}` you can change the `mysql` to whtever it is in your `database.php`
+run the second command `php artisan transform: {host} {db} {username} {password}` (like `transform:dump` command)  
+`{--target=mysql}` 
+
+- you can change the `mysql` to whatever it is in your `database.php`
 
 If you wanna disable foreign keys that tables has/have, add the following flag `foreign-keys-checks` 
 add the end of the second Command:
