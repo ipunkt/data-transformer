@@ -24,8 +24,8 @@ The main job of this package to fake data that GDPR relevant is. Take a look at 
 * License plate
 * Health data
 
-This list must be considered, when you try to work with real Data, therefore  GDPR relevant data must be taken 
-into your consideration and must be transformed. The Rest will be then `1:1` taken.
+This list must be considered, when you try to work with real Data, therefore  GDPR relevant data must be transformed. 
+The Rest will be then `1:1` taken.
 
 
 ### Installation - Quick-start
@@ -33,7 +33,7 @@ into your consideration and must be transformed. The Rest will be then `1:1` tak
  
 __Or__
 
- Alternative you can add these lines into your composer file then `composer update` in console command
+ Alternative you can add these lines into your composer file then `composer install` in console command
 ```
 "require": {
 	"ipunkt/data-transformer": "^1.0"
@@ -41,30 +41,13 @@ __Or__
 ```
 
 ### Configuration
-
-You will need two connection in `config/database.php` source and target
- here's an Example
+I assume that you already have a connection in your `database.php`. like the following
  ```
-'mysql-production' => [
+'mysql' => [
         'driver' => 'mysql',
         'host' => env('DB_HOST', '127.0.0.1'),
         'port' => env('DB_PORT', '3306'),
-        'database' => env('DB_DATABASE', 'forge'), // DB_DATABASE_STAGING=db
-        'username' => env('DB_USERNAME', 'forge'),
-        'password' => env('DB_PASSWORD', ''),
-        'unix_socket' => env('DB_SOCKET', ''),
-        'charset' => 'utf8mb4',
-        'collation' => 'utf8mb4_unicode_ci',
-        'prefix' => '',
-        'prefix_indexes' => true,
-        'strict' => true,
-        'engine' => null,
-    ],
-    'mysql-staging' => [
-        'driver' => 'mysql',
-        'host' => env('DB_HOST', '127.0.0.1'),
-        'port' => env('DB_PORT', '3306'),
-        'database' => env('DB_DATABASE_STAGING', 'forge'), // DB_DATABASE_STAGING=staging
+        'database' => env('DB_DATABASE', 'forge'),
         'username' => env('DB_USERNAME', 'forge'),
         'password' => env('DB_PASSWORD', ''),
         'unix_socket' => env('DB_SOCKET', ''),
@@ -76,6 +59,9 @@ You will need two connection in `config/database.php` source and target
         'engine' => null,
     ],
 ```
+You will be asked about the connection which is for source, when you run later on both of commands.
+`php artisan transform:dump` and `php artisan transfrom:data`
+
 
 * run this command: `php artisan vendor:publish` then choose `Ipunkt\DataTransformer\DataTransformerServiceProvider`
 * find your Config File in `config/data-transformer.php` 
@@ -118,19 +104,16 @@ Here's the all list with data that could be transformed:
 * `address` => `fakeAddress` via faker `$this->faker->address`
 * `date_of_birth` => `fakeDateOfBirth` via faker `$this->faker->dateTime()->format('Y-m-d')`
 
-
-
-
 Here you can decide whether the Name must be transformed or not, for instances. If you let the Name without any change then it will be faked. If you don't want to transform Name, then you have to replace the `fakeName` with `value`. That's it.
 
 The second and last Step:
 run the second command `php artisan transform: {host} {db} {username} {password}` (like `transform:dump` command)  
 `{--target=mysql}` 
 
-- you can change the `mysql` to whatever it is in your `database.php`
+you have to change the `mysql` to whatever it is in your `database.php`
 
-If you wanna disable foreign keys that tables has/have, add the following flag `foreign-keys-checks` 
-add the end of the second Command:
+If you want to disable foreign keys that tables has/have, add the following flag `foreign-keys-checks` 
+at the end of the second Command:
 `php artisan transform:dump {source} {target} --foreign-keys-checks=no`
 
 __Note:__  
